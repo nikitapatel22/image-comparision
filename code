@@ -1,0 +1,46 @@
+import numpy as np
+import cv2
+original = cv2.imread("res/abhi.jpg")
+image_to_com = cv2.imread("res/nikita.jpg")
+
+'''print(original.shape)
+print(image_to_com.shape)
+cv2.imshow("m1",original)
+cv2.imshow("m2",image_to_com)
+cv2.waitKey(0)'''
+
+orb = cv2.ORB_create(nfeatures=8000)
+kp_1, desc_1 = orb.detectAndCompute(original, None)
+kp_2, desc_2 = orb.detectAndCompute(image_to_com, None)
+
+'''
+print("kp1", len(kp_1))
+print("kp2", len(kp_2))
+'''
+
+bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
+matches = bf.match(desc_1, desc_2)
+
+numberKeyPoints = 0
+if len(kp_1) <= len(kp_2):
+    numberKeyPoints = len(kp_1)
+else:
+    numberKeyPoints = len(kp_2)
+
+matches = sorted(matches, key=lambda x: x.distance)
+
+img3 = cv2.drawMatches(original, kp_1, image_to_com, kp_2, matches[:50], None)
+
+cv2.imshow("img", cv2.resize(img3, None, fx=0.5, fy=0.5))
+cv2.waitKey(0)
+
+per = int(len(matches)/numberKeyPoints * 100)
+print("Match percentage is:", per)
+
+if per == 100:
+    print("Exactly similar picture")
+elif per >= 70:
+    print("Similar picture")
+else:
+    print("Dissimilar picture")
